@@ -16,9 +16,12 @@ class App extends Component {
       messages : [],
       joinableRooms : [],
       joinedRooms : [],
+      roomId : null,
     }
 
     this.sendMessage = this.sendMessage.bind(this);
+    this.subscribeToRoom = this.subscribeToRoom.bind(this);
+    this.getRooms = this.getRooms.bind(this);
   }
 
 componentDidMount() {
@@ -34,7 +37,17 @@ componentDidMount() {
     console.log('Successful connection', currentUser)
     //subscribe to a room and listen to messages;
     this.currentUser = currentUser;
+    this.getRooms();
 
+  })
+  .catch(err => {
+    console.log('Error on connection', err)
+  })
+
+
+}
+
+getRooms() {
 //get array of joinable rooms that user isnt a member of;
 this.currentUser.getJoinableRooms()
   .then(rooms => {
@@ -49,34 +62,44 @@ this.currentUser.getJoinableRooms()
     console.log(`Error getting joinable rooms: ${err}`)
   })
   
+}
+
+subscribeToRoom(roomId) {
   //subscribe to a room from list of rooms;
-
-    this.currentUser.subscribeToRoom({
-      roomId: "19393147",
-      hooks: {
-        onMessage: message => {
-          console.log(`Received new message ${message.text}`)
-          //store messages in state;
-          this.setState({
-            messages : [...this.state.messages, message]
-          })
-        }
-      },
-      messageLimit: 10
+this.setState({
+  messages : [],
+})
+  this.currentUser.subscribeToRoom({
+    roomId: roomId,
+    hooks: {
+      onMessage: message => {
+        console.log(`Received new message ${message.text}`)
+        //store messages in state;
+        this.setState({
+          messages : [...this.state.messages, message]
+        })
+      }
+    },
+    messageLimit: 10
+  })
+  .then(room => {
+//get the current room so we send message to that room only;
+    this.setState({
+      roomId : room.id
     })
-  })
-  .catch(err => {
-    console.log('Error on connection', err)
-  })
 
+    //after subscribing we just want an updated list so we call getrooms again;
+    this.getRooms();
+})
 
+  
 }
 
 
 sendMessage(text) {
   this.currentUser.sendMessage({
     text: text,
-    roomId: "19393147"
+    roomId: this.state.roomId
   })
   .then(messageId => {
     console.log(text + " added successfully.")
@@ -90,7 +113,7 @@ sendMessage(text) {
     return (
       <div className="App-header">
         
-        <RoomList rooms={[...this.state.joinableRooms, ...this.state.joinedRooms]}/>
+        <RoomList subscribeToRoom={this.subscribeToRoom} rooms={[...this.state.joinableRooms, ...this.state.joinedRooms]}/>
           <NewRoomForm />
           <SendMessageForm sendMessage={this.sendMessage}/>
           <MessageList messages={this.state.messages}/>

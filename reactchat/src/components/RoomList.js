@@ -4,6 +4,7 @@ import './RoomList.css';
 
 class RoomList extends React.Component {
 
+
 render() {
     return(
         <div className="rooms-list">
@@ -14,8 +15,8 @@ render() {
                 this.props.rooms.map(
                     room => {
                         return(
-                            <li key={room.name}>
-                                <a href="#">{room.name}</a>
+                            <li key={room.id}>
+                                <a onClick={() => this.props.subscribeToRoom(room.id)} href="#">{room.name}</a>
                             </li>
                         )
                     }
