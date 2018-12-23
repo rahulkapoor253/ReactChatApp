@@ -13,16 +13,26 @@ constructor(props) {
 }
 
 handleChange = (event) => {
-    //prevent page from reloading again;
-event.preventDefault();
+    
 this.setState({
     message : event.target.value
 })
 }
 
+handleSubmit = (event) => {
+//prevent page from reloading again;
+event.preventDefault();
+
+//submit the message state to chatkit;
+this.props.sendMessage(this.state.message);
+this.setState({
+    message : '',
+})
+}
+
 render() {
     return(
-        <form className="send-message-form">
+        <form onSubmit={this.handleSubmit} className="send-message-form">
                 <input
                  value={this.state.message}
                 onChange={this.handleChange}
