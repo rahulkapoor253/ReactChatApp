@@ -7,7 +7,22 @@ class RoomList extends React.Component {
 render() {
     return(
         <div className="rooms-list">
-            <div className="help-text">RoomList</div>
+            <div>RoomList</div>
+            
+            <ol>
+            {
+                this.props.rooms.map(
+                    room => {
+                        return(
+                            <li key={room.name}>
+                                <a href="#">{room.name}</a>
+                            </li>
+                        )
+                    }
+                )
+            }
+
+</ol>
         </div>
     )
 }

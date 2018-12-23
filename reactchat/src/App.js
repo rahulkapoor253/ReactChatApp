@@ -14,6 +14,8 @@ class App extends Component {
 
     this.state = {
       messages : [],
+      joinableRooms : [],
+      joinedRooms : [],
     }
 
     this.sendMessage = this.sendMessage.bind(this);
@@ -26,14 +28,28 @@ componentDidMount() {
     tokenProvider: new TokenProvider({ url: 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/f3d02e65-28de-4979-b56b-274b9ea16dff/token' })
   })
 
-//get array of joinable rooms that user isnt a member of;
-
 
   chatManager.connect()
   .then(currentUser => {
     console.log('Successful connection', currentUser)
     //subscribe to a room and listen to messages;
     this.currentUser = currentUser;
+
+//get array of joinable rooms that user isnt a member of;
+this.currentUser.getJoinableRooms()
+  .then(rooms => {
+    // do something with the rooms
+
+    this.setState({
+      joinableRooms : rooms,
+      joinedRooms : this.currentUser.rooms
+    })
+  })
+  .catch(err => {
+    console.log(`Error getting joinable rooms: ${err}`)
+  })
+  
+  //subscribe to a room from list of rooms;
 
     this.currentUser.subscribeToRoom({
       roomId: "19393147",
@@ -74,7 +90,7 @@ sendMessage(text) {
     return (
       <div className="App-header">
         
-        <RoomList />
+        <RoomList rooms={[...this.state.joinableRooms, ...this.state.joinedRooms]}/>
           <NewRoomForm />
           <SendMessageForm sendMessage={this.sendMessage}/>
           <MessageList messages={this.state.messages}/>
